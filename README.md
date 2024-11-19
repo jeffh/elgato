@@ -48,7 +48,7 @@ err := light.Refresh(ctx)
 Use `Set`, `SetBrightness`, `SetOn`, or `SetTemperature` to change the state of
 the light:
 
-```
+```go
 light.SetOn(true)
 ```
 
@@ -58,7 +58,7 @@ That's it.
 
 If you want to use this with [HAP][hap], then import the hap subpackage
 
-```
+```go
 import elHap "github.com/jeffh/elgato/hap"
 
 acc := NewElgatoLightAccessory(ctx, light, 0) // default refresh interval is 5 seconds
