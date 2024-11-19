@@ -63,6 +63,12 @@ func mockLightServer(t *testing.T) *httptest.Server {
 				return
 			}
 			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(LightOptions{
+				NumberOfLights: 1,
+				Lights: []LightConfig{
+					{Brightness: 50, On: 1, Temperature: 4000},
+				},
+			})
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -74,7 +80,7 @@ func TestConnect(t *testing.T) {
 	defer srv.Close()
 
 	// Extract host and port from test server
-	light := LightAccessory{Addr: srv.Listener.Addr().String()}
+	light := MakeLightAccessory(srv.Listener.Addr().String())
 
 	ctx := context.Background()
 	if err := light.Connect(ctx); err != nil {

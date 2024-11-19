@@ -3,6 +3,8 @@ package elgato
 import (
 	"context"
 	"log/slog"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/jeffh/elgato/ezmdns"
@@ -13,8 +15,8 @@ const (
 	CameraService = "_egstreamwrap._tcp"
 )
 
-// DiscoverLocalAccessories continuously finds for local elgato light accessories
-func DiscoverLocalAccessories(ctx context.Context, opt ezmdns.DiscoverOptions) (chan ezmdns.ServiceChangedEvent[*LightAccessory], error) {
+// DiscoverLocalLights continuously finds for local elgato light accessories
+func DiscoverLocalLjghts(ctx context.Context, opt ezmdns.DiscoverOptions) (chan ezmdns.ServiceChangedEvent[*LightAccessory], error) {
 	if opt.Service == "" {
 		opt.Service = LightService
 	}
@@ -45,10 +47,17 @@ func DiscoverLocalAccessories(ctx context.Context, opt ezmdns.DiscoverOptions) (
 }
 
 func connectToLight(ctx context.Context, e *ezmdns.ServiceEntry) (*LightAccessory, bool) {
-	L := Accessory(e.HostName, e.Port)
+	L := MakeLightAccessory(net.JoinHostPort(e.HostName, strconv.Itoa(e.Port)))
 	subctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	firstAddr := ""
+	if len(e.AddrIPv4) > 0 {
+		firstAddr = e.AddrIPv4[0].String()
+	}
+	if len(e.AddrIPv6) > 0 {
+		firstAddr = e.AddrIPv6[0].String()
+	}
 	if err := L.Connect(subctx); err != nil {
-		L = Accessory(e.AddrIPv4[0].String(), e.Port)
+		L = MakeLightAccessory(net.JoinHostPort(firstAddr, strconv.Itoa(e.Port)))
 		if err := L.Connect(subctx); err != nil {
 			slog.Error("connecting to Elgato device failed", "err", err, "host", e.HostName, "port", e.Port)
 			cancel()

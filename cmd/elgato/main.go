@@ -5,9 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/jeffh/elgato"
@@ -58,18 +56,7 @@ func main() {
 	}
 
 	if *info != "" {
-		// Parse IP and port from the info argument
-		host, portStr, err := net.SplitHostPort(*info)
-		if err != nil {
-			log.Fatalf("Invalid address format. Expected ip:port, got %s", *info)
-		}
-
-		port, err := strconv.Atoi(portStr)
-		if err != nil {
-			log.Fatalf("Invalid port number: %s", portStr)
-		}
-
-		light := elgato.Accessory(host, port)
+		light := elgato.MakeLightAccessory(*info)
 		if err := light.Connect(ctx); err != nil {
 			log.Fatal(err)
 		}

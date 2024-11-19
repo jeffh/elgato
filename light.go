@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
-	"strconv"
 )
 
 type LightAccessory struct {
@@ -22,8 +20,8 @@ type LightAccessory struct {
 	Options  LightOptions
 }
 
-func Accessory(ip string, port int) LightAccessory {
-	return LightAccessory{Addr: net.JoinHostPort(ip, strconv.Itoa(port))}
+func MakeLightAccessory(addr string) LightAccessory {
+	return LightAccessory{Addr: addr}
 }
 
 type LightSettings struct {
@@ -90,6 +88,7 @@ func (L *LightAccessory) Identify(ctx context.Context) error {
 	return L.request(ctx, "POST", "/elgato/identify", nil, nil)
 }
 
+// Refreshes the light state from the accessory (on/off, brightness, temperature)
 func (L *LightAccessory) Refresh(ctx context.Context) error {
 	// too noisy
 	// slog.Info("Elgato.Refresh", slog.String("Serial", L.Info.SerialNumber))
@@ -120,6 +119,7 @@ func (L *LightAccessory) Set(ctx context.Context, c LightConfig) error {
 }
 
 // SetBrightness assigns light brightness value to all lights attached to the accessory
+// value ranges from 0 to 100
 func (L *LightAccessory) SetBrightness(ctx context.Context, value int) error {
 	slog.Info(
 		"Elgato.SetBrightness",
@@ -133,6 +133,7 @@ func (L *LightAccessory) SetBrightness(ctx context.Context, value int) error {
 }
 
 // SetTemperature assigns light temperature value to all lights attached to the accessory
+// Ranges for Key Light Air are 143 - 344
 func (L *LightAccessory) SetTemperature(ctx context.Context, value int) error {
 	slog.Info(
 		"Elgato.SetTemperature",
@@ -197,6 +198,10 @@ func (L *LightAccessory) request(ctx context.Context, method, path string, input
 
 	if res.StatusCode < 200 || res.StatusCode > 300 {
 		return fmt.Errorf("unexpected http status code: %d %s", res.StatusCode, res.Status)
+	}
+
+	if output == nil {
+		return err
 	}
 
 	buf, err := io.ReadAll(res.Body)
