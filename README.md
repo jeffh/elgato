@@ -64,3 +64,5 @@ import elHap "github.com/jeffh/elgato/hap"
 acc := NewElgatoLightAccessory(ctx, light, 0) // default refresh interval is 5 seconds
 // append acc.A to your hap server
 ```
+
+[hap]: https://github.com/brutella/hap
