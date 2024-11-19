@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/grandcat/zeroconf"
 	"github.com/jeffh/elgato/ezmdns"
 )
 
@@ -45,7 +44,7 @@ func DiscoverLocalAccessories(ctx context.Context, opt ezmdns.DiscoverOptions) (
 	return out, nil
 }
 
-func connectToLight(ctx context.Context, e *zeroconf.ServiceEntry) (*LightAccessory, bool) {
+func connectToLight(ctx context.Context, e *ezmdns.ServiceEntry) (*LightAccessory, bool) {
 	L := Accessory(e.HostName, e.Port)
 	subctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	if err := L.Connect(subctx); err != nil {

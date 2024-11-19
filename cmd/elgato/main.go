@@ -16,7 +16,7 @@ import (
 
 func main() {
 	discover := flag.Bool("discover", false, "Discover all Elgato lights on the network")
-	service := flag.String("service", "_elg._tcp", "Discover a specific service (format: service.domain)")
+	service := flag.String("service", elgato.LightService, "Discover a specific service (format: _elg._tcp)")
 	domain := flag.String("domain", "", "Discover a specific domain")
 	info := flag.String("info", "", "Get information about a specific light (format: ip:port) elgato lights port is typically on 9123")
 	flag.Parse()
@@ -44,11 +44,10 @@ func main() {
 		go func() {
 			seen := make(map[string]bool)
 			for e := range stream {
-				fmt.Printf("event: %+v\n", e)
 				for _, service := range e.New {
 					addr := service.AddrIPv4[0].String()
 					if !seen[addr] {
-						fmt.Println(addr)
+						fmt.Printf("%s:%d - addr=%q host=%q instance=%q ttl=%d\n", service.HostName, service.Port, addr, service.HostName, service.Instance, service.TTL)
 						seen[addr] = true
 					}
 				}
